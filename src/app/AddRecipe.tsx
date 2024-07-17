@@ -1,8 +1,43 @@
 import React from 'react';
 import { InboxOutlined } from '@ant-design/icons';
-import type { UploadProps } from 'antd';
+import type { UploadProps, SelectProps } from 'antd';
 import { message, Upload } from 'antd';
-import { Header } from '../ui/Header';
+import { PageTitle } from '../ui/PageTitle';
+import { Text } from '../ui/Text';
+import {
+  Button,
+  Form,
+  Input,
+  Select
+} from 'antd';
+
+
+const formItemLayout = {
+  labelCol: {
+    xs: { span: 24 },
+    sm: { span: 6 },
+  },
+  wrapperCol: {
+    xs: { span: 24 },
+    sm: { span: 14 },
+  },
+};
+
+
+const options: SelectProps['options'] = [];
+
+for (let i = 0; i < 100000; i++) {
+  const value = `${i.toString(36)}${i}`;
+  options.push({
+    label: value,
+    value,
+    disabled: i === 10,
+  });
+}
+
+const handleChange = (value: string[]) => {
+  console.log(`selected ${value}`);
+};
 
 const { Dragger } = Upload;
 
@@ -30,22 +65,64 @@ const AddRecipe: React.FC = () => {
 
   return (
     <>
-        <Header text="Recept toevoegen" />
-        <div>
-            <p>Drop your recipe below</p>
-        </div>
+        <PageTitle text="Recept toevoegen" style={{marginBottom: '16px'}}/>
+        <Text text="Voeg je recept hieronder toe:" color="" size=""/>
+        <Form {...formItemLayout} variant="outlined" style={{ maxWidth: 600 }}>
+          <Form.Item label="Naam recept" name="recipeName" rules={[{ required: true, message: 'Kies naam!' }]}>
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            label="Upload pdf"
+            name="recipePdf"
+            rules={[{ required: true, message: 'Upload recept!' }]}
+          >
+            <Dragger {...props}>
+              <p className="ant-upload-drag-icon">
+                  <InboxOutlined />
+              </p>
+              <p className="ant-upload-text">Click or drag file to this area to upload</p>
+              <p className="ant-upload-hint">
+                  Support for a single or bulk upload. Strictly prohibited from uploading company data or other
+                  banned files.
+              </p>
+            </Dragger>
+          </Form.Item>
+
+          <Form.Item
+            label="Ingrediënten"
+            name="recipeIngredients"
+            rules={[{ required: true, message: 'Selecteer ingredienten!' }]}
+          >
+                <Select
+                  mode="multiple"
+                  placeholder="Selecteer ingrediënten"
+                  onChange={handleChange}
+                  options={options}
+                />
+          </Form.Item>
+
+          <Form.Item
+            label="Labels"
+            name="recipeLabels"
+          >
+                <Select
+                  mode="multiple"
+                  placeholder="Selecteer labels"
+                  onChange={handleChange}
+                  options={options}
+                />
+          </Form.Item>
 
 
-        <Dragger {...props}>
-            <p className="ant-upload-drag-icon">
-                <InboxOutlined />
-            </p>
-            <p className="ant-upload-text">Click or drag file to this area to upload</p>
-            <p className="ant-upload-hint">
-                Support for a single or bulk upload. Strictly prohibited from uploading company data or other
-                banned files.
-            </p>
-        </Dragger>
+          <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
+            <Button type="primary" htmlType="submit">
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
+
+
     </>
     );
     

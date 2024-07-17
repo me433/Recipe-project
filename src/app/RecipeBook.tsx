@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Avatar, List } from 'antd';
 import VirtualList from 'rc-virtual-list';
-import { Header } from '../ui/Header';
+import { PageTitle } from '../ui/PageTitle';
+import type { SelectProps } from 'antd';
+import { Select } from 'antd';
+import { Input } from 'antd';
+import type { SearchProps } from 'antd/es/input/Search';
 
 interface UserItem {
   email: string;
@@ -46,9 +50,47 @@ const RecipeBook: React.FC = () => {
     }
   };
 
+const { Search } = Input;
+
+const onSearch: SearchProps['onSearch'] = (value, _e, info) => console.log(info?.source, value);
+
+const options: SelectProps['options'] = [];
+
+for (let i = 0; i < 100000; i++) {
+  const value = `${i.toString(36)}${i}`;
+  options.push({
+    label: value,
+    value,
+    disabled: i === 10,
+  });
+}
+
+const handleChange = (value: string[]) => {
+  console.log(`selected ${value}`);
+};
+
+
   return (
     <>
-    <Header text="Receptenboek" />
+    <PageTitle 
+      text="Receptenboek" 
+      style={{marginBottom: '16px'}}
+    />
+    <Search placeholder="input search text" onSearch={onSearch} style={{ width: '23%', marginRight: '2%'}} />
+    <Select
+      mode="multiple"
+      style={{ width: '23%', marginRight: '2%' }}
+      placeholder="Selecteer ingrediënten"
+      onChange={handleChange}
+      options={options}
+    />
+    <Select
+      mode="multiple"
+      style={{ width: '23%', marginRight: '2%' }}
+      placeholder="Selecteer labels"
+      onChange={handleChange}
+      options={options}
+    />
     <List>
       <VirtualList
         data={data}

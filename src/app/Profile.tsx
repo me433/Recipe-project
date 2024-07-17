@@ -1,10 +1,10 @@
-import { Header } from "../ui/Header";
+import { PageTitle } from "../ui/PageTitle";
 
 const Profile: React.FC = () => {
 
   return (
     <>
-    <Header text="Profiel" />
+    <PageTitle text="Profiel" style={{marginBottom: '16px'}}/>
     </>
   );
 };
