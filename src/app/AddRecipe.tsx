@@ -1,4 +1,4 @@
-import React from 'react';
+import { Dispatch, SetStateAction } from 'react';
 import { InboxOutlined } from '@ant-design/icons';
 import type { UploadProps, SelectProps } from 'antd';
 import { message, Upload } from 'antd';
@@ -10,6 +10,8 @@ import {
   Input,
   Select
 } from 'antd';
+
+
 
 
 const formItemLayout = {
@@ -61,21 +63,46 @@ const props: UploadProps = {
   },
 };
 
-const AddRecipe: React.FC = () => {
+interface Recipe {
+  id: number;
+  title: string;
+  description: string;
+  ingredients: string[];
+  labels: string[];
+  pdf: string;
+}
+
+interface AddRecipeProps {
+  setRecipeList: Dispatch<SetStateAction<Recipe[]>>;
+  recipeList: Recipe[];
+}
+
+const AddRecipe: React.FC<AddRecipeProps> = ( {setRecipeList, recipeList}: AddRecipeProps ) => {
+
+  const onFinish = (values: any) => {
+    const id : number = recipeList.length ? recipeList[recipeList.length-1].id + 1 : 1;
+    const recipe = {id: id, title: values.recipeName, description: values.recipeDescription, ingredients: values.recipeIngredients, labels: values.recipeLabels, pdf: values.recipePdf}
+    const allRecipes: Recipe[] = [...recipeList, recipe];
+    setRecipeList(allRecipes)
+    console.log('Received values of form:', recipeList);
+  };
 
   return (
     <>
         <PageTitle text="Recept toevoegen" style={{marginBottom: '16px'}}/>
         <Text text="Voeg je recept hieronder toe:" color="" size=""/>
-        <Form {...formItemLayout} variant="outlined" style={{ maxWidth: 600 }}>
+        <Form {...formItemLayout} variant="outlined" style={{ maxWidth: 600 }} onFinish={onFinish}>
           <Form.Item label="Naam recept" name="recipeName" rules={[{ required: true, message: 'Kies naam!' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="Beschrijving recept" name="recipeDescription" rules={[{ required: true, message: 'Kies beschrijving!' }]}>
             <Input />
           </Form.Item>
 
           <Form.Item
             label="Upload pdf"
             name="recipePdf"
-            rules={[{ required: true, message: 'Upload recept!' }]}
+            rules={[{ required: false, message: 'Upload recept!' }]}
           >
             <Dragger {...props}>
               <p className="ant-upload-drag-icon">
