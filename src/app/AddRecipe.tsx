@@ -26,14 +26,25 @@ const formItemLayout = {
 };
 
 
-const options: SelectProps['options'] = [];
+const ingredients: SelectProps['options'] = [];
+const ingredientsDB: string[] = ['wortel', 'sla', 'paprika']
 
-for (let i = 0; i < 100000; i++) {
-  const value = `${i.toString(36)}${i}`;
-  options.push({
+for (let i = 0; i < ingredientsDB.length; i++) {
+  const value = ingredientsDB[i];
+  ingredients.push({
     label: value,
     value,
-    disabled: i === 10,
+  });
+}
+
+const labels: SelectProps['options'] = [];
+const labelsDB: string[] = ['avondeten', 'snel klaar', 'cocktail']
+
+for (let i = 0; i < labelsDB.length; i++) {
+  const value = labelsDB[i];
+  labels.push({
+    label: value,
+    value,
   });
 }
 
@@ -78,20 +89,21 @@ interface AddRecipeProps {
 }
 
 const AddRecipe: React.FC<AddRecipeProps> = ( {setRecipeList, recipeList}: AddRecipeProps ) => {
+  const [addRecipe] = Form.useForm();
 
-  const onFinish = (values: any) => {
+  const submitRecipe = (values: any) => {
     const id : number = recipeList.length ? recipeList[recipeList.length-1].id + 1 : 1;
     const recipe = {id: id, title: values.recipeName, description: values.recipeDescription, ingredients: values.recipeIngredients, labels: values.recipeLabels, pdf: values.recipePdf}
     const allRecipes: Recipe[] = [...recipeList, recipe];
     setRecipeList(allRecipes)
-    console.log('Received values of form:', recipeList);
+    addRecipe.resetFields();
   };
 
   return (
     <>
         <PageTitle text="Recept toevoegen" style={{marginBottom: '16px'}}/>
         <Text text="Voeg je recept hieronder toe:" color="" size=""/>
-        <Form {...formItemLayout} variant="outlined" style={{ maxWidth: 600 }} onFinish={onFinish}>
+        <Form form={addRecipe} {...formItemLayout} variant="outlined" style={{ maxWidth: 600 }} onFinish={submitRecipe}>
           <Form.Item label="Naam recept" name="recipeName" rules={[{ required: true, message: 'Kies naam!' }]}>
             <Input />
           </Form.Item>
@@ -125,7 +137,7 @@ const AddRecipe: React.FC<AddRecipeProps> = ( {setRecipeList, recipeList}: AddRe
                   mode="multiple"
                   placeholder="Selecteer ingrediënten"
                   onChange={handleChange}
-                  options={options}
+                  options={ingredients}
                 />
           </Form.Item>
 
@@ -137,7 +149,7 @@ const AddRecipe: React.FC<AddRecipeProps> = ( {setRecipeList, recipeList}: AddRe
                   mode="multiple"
                   placeholder="Selecteer labels"
                   onChange={handleChange}
-                  options={options}
+                  options={labels}
                 />
           </Form.Item>
 

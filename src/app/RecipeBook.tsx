@@ -1,10 +1,11 @@
-import { List } from 'antd';
+import { useEffect, useState } from 'react';
 import VirtualList from 'rc-virtual-list';
 import { PageTitle } from '../ui/PageTitle';
+import { List } from 'antd';
 import type { SelectProps } from 'antd';
 import { Select } from 'antd';
 import { Input } from 'antd';
-import type { SearchProps } from 'antd/es/input/Search';
+
 
 interface Recipe {
   id: number;
@@ -18,33 +19,57 @@ interface Recipe {
 const ContainerHeight = window.innerHeight - 64 - 32 - 64.5 - 33;
 {/* 32 because two times the padding set in Navigation : Need better solution*/}
 
-//Property 'recipeList' does not exist on type 'Recipe[]'.ts(2339)
-//(parameter) recipeList: any
+const ingredients: SelectProps['options'] = [];
+const ingredientsDB: string[] = ['wortel', 'sla', 'paprika']
+
+for (let i = 0; i < ingredientsDB.length; i++) {
+  const value = ingredientsDB[i];
+  ingredients.push({
+    label: value,
+    value,
+  });
+}
+
+const labels: SelectProps['options'] = [];
+const labelsDB: string[] = ['avondeten', 'snel klaar', 'cocktail']
+
+for (let i = 0; i < labelsDB.length; i++) {
+  const value = labelsDB[i];
+  labels.push({
+    label: value,
+    value,
+  });
+}
+
+
 interface RecipeBookProps {
   recipeList: Recipe[];
 }
 
 const RecipeBook: React.FC<RecipeBookProps> = ({ recipeList }: RecipeBookProps) => {
+  const [search, setSearch] = useState<string>('')
+  const [searchResults, setSearchResults] = useState<Recipe[]>([])
+  const [ingredientFilter, setIngredientFilter] = useState<string[]>([])
+  const [labelFilter, setLabelFilter] = useState<string[]>([])
+  const { Search } = Input;
 
-const { Search } = Input;
+  useEffect(() => {
+    const filteredRecipes: Recipe[] = recipeList.filter(recipe => (((recipe.title).toLowerCase()).includes(search.toLowerCase())
+    || ((recipe.description).toLowerCase()).includes(search.toLowerCase()))
+    && ingredientFilter?.every((i: any) => recipe.ingredients?.includes(i))
+    && labelFilter?.every((i: any) => recipe.labels?.includes(i))
+  );
 
-const onSearch: SearchProps['onSearch'] = (value, _e, info) => console.log(info?.source, value);
+    setSearchResults(filteredRecipes)
+  }, [search, ingredientFilter, labelFilter])
 
-const options: SelectProps['options'] = [];
+  const handleLabelChange = (value: string[]) => {
+    setLabelFilter(value);
+  };
 
-for (let i = 0; i < 100000; i++) {
-  const value = `${i.toString(36)}${i}`;
-  options.push({
-    label: value,
-    value,
-    disabled: i === 10,
-  });
-}
-
-const handleChange = (value: string[]) => {
-  console.log(`selected ${value}`);
-};
-
+  const handleIngredientChange = (value: string[]) => {
+    setIngredientFilter(value);
+  };
 
   return (
     <>
@@ -52,24 +77,24 @@ const handleChange = (value: string[]) => {
       text="Receptenboek" 
       style={{marginBottom: '16px'}}
     />
-    <Search placeholder="input search text" onSearch={onSearch} style={{ width: '23%', marginRight: '2%'}} />
+    <Search placeholder="input search text" value={search} onChange={(e) => setSearch(e.target.value)} style={{ width: '23%', marginRight: '2%'}} />
     <Select
       mode="multiple"
       style={{ width: '23%', marginRight: '2%' }}
       placeholder="Selecteer ingrediënten"
-      onChange={handleChange}
-      options={options}
+      onChange={handleIngredientChange}
+      options={ingredients}
     />
     <Select
       mode="multiple"
       style={{ width: '23%', marginRight: '2%' }}
       placeholder="Selecteer labels"
-      onChange={handleChange}
-      options={options}
+      onChange={handleLabelChange}
+      options={labels}
     />
     <List>
       <VirtualList
-        data={recipeList}
+        data={searchResults}
         height={ContainerHeight}
         itemHeight={47}
         itemKey="id"
