@@ -19,8 +19,16 @@ interface Recipe {
 const ContainerHeight = window.innerHeight - 64 - 32 - 64.5 - 33;
 {/* 32 because two times the padding set in Navigation : Need better solution*/}
 
-const ingredients: SelectProps['options'] = [];
-const ingredientsDB: string[] = ['wortel', 'sla', 'paprika']
+let ingredients: SelectProps['options'] = [];
+
+
+async function fetchIngredients(): Promise<{ingredients: string[]}> {
+  const response = await fetch('http://localhost:3500/api/ingredients');
+  const data = await response.json();
+  return data;
+}
+
+/* const ingredientsDB: string[] = ['wortel', 'sla', 'paprika']
 
 for (let i = 0; i < ingredientsDB.length; i++) {
   const value = ingredientsDB[i];
@@ -28,7 +36,7 @@ for (let i = 0; i < ingredientsDB.length; i++) {
     label: value,
     value,
   });
-}
+} */
 
 const labels: SelectProps['options'] = [];
 const labelsDB: string[] = ['avondeten', 'snel klaar', 'cocktail']
@@ -51,7 +59,15 @@ const RecipeBook: React.FC<RecipeBookProps> = ({ recipeList }: RecipeBookProps) 
   const [searchResults, setSearchResults] = useState<Recipe[]>([])
   const [ingredientFilter, setIngredientFilter] = useState<string[]>([])
   const [labelFilter, setLabelFilter] = useState<string[]>([])
+  const [initLoading, setInitLoading] = useState<boolean>(true)
   const { Search } = Input;
+
+  useEffect(() => {
+    fetchIngredients().then(res => {
+      setInitLoading(false);
+      ingredients = (res["ingredients"].map(value => ({label: value, value,})))
+    })
+  }, [])
 
   useEffect(() => {
     const filteredRecipes: Recipe[] = recipeList.filter(recipe => (((recipe.title).toLowerCase()).includes(search.toLowerCase())
@@ -59,7 +75,6 @@ const RecipeBook: React.FC<RecipeBookProps> = ({ recipeList }: RecipeBookProps) 
     && ingredientFilter?.every((i: any) => recipe.ingredients?.includes(i))
     && labelFilter?.every((i: any) => recipe.labels?.includes(i))
   );
-
     setSearchResults(filteredRecipes)
   }, [search, ingredientFilter, labelFilter])
 
@@ -82,6 +97,7 @@ const RecipeBook: React.FC<RecipeBookProps> = ({ recipeList }: RecipeBookProps) 
       mode="multiple"
       style={{ width: '23%', marginRight: '2%' }}
       placeholder="Selecteer ingrediënten"
+      loading={initLoading}
       onChange={handleIngredientChange}
       options={ingredients}
     />
