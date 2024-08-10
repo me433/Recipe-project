@@ -23,7 +23,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path='/' element={<Canvas />} >
-          <Route index element={<RecipeBook recipeList={recipeList} />} />
+          <Route index element={<RecipeBook setRecipeList={setRecipeList} recipeList={recipeList} />} />
           <Route path='recept-toevoegen' element={<AddRecipe setRecipeList={setRecipeList} recipeList={recipeList} />} />
           <Route path="profiel" element={<Profile />} />
           <Route path="*" element={<Missing />} />

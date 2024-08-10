@@ -1,4 +1,5 @@
-import { Dispatch, SetStateAction } from 'react';
+import { useEffect, useState, Dispatch, SetStateAction } from 'react';
+import axios from 'axios';
 import { InboxOutlined } from '@ant-design/icons';
 import type { UploadProps, SelectProps } from 'antd';
 import { message, Upload } from 'antd';
@@ -26,26 +27,13 @@ const formItemLayout = {
 };
 
 
-const ingredients: SelectProps['options'] = [];
-const ingredientsDB: string[] = ['wortel', 'sla', 'paprika']
+let ingredients: SelectProps['options'] = [];
+let labels: SelectProps['options'] = [];
 
-for (let i = 0; i < ingredientsDB.length; i++) {
-  const value = ingredientsDB[i];
-  ingredients.push({
-    label: value,
-    value,
-  });
-}
-
-const labels: SelectProps['options'] = [];
-const labelsDB: string[] = ['avondeten', 'snel klaar', 'cocktail']
-
-for (let i = 0; i < labelsDB.length; i++) {
-  const value = labelsDB[i];
-  labels.push({
-    label: value,
-    value,
-  });
+async function fetchResource(resource: string): Promise<{data: string[]}> {
+  const response = await fetch(`http://localhost:3500/api/${resource}`);
+  const data = await response.json();
+  return data;
 }
 
 const handleChange = (value: string[]) => {
@@ -90,11 +78,27 @@ interface AddRecipeProps {
 
 const AddRecipe: React.FC<AddRecipeProps> = ( {setRecipeList, recipeList}: AddRecipeProps ) => {
   const [addRecipe] = Form.useForm();
+  const [initLoading, setInitLoading] = useState<boolean>(true)
+
+  useEffect(() => {
+    Promise.all([
+      fetchResource('ingredients'),
+      fetchResource('labels'),
+    ]).then(([resIngredients, resLabels]) => {
+      console.log('loaded')
+      setInitLoading(false)
+      ingredients = (resIngredients['data'].map(value => ({label: value, value,})))
+      labels = (resLabels['data'].map(value => ({label: value, value,})))
+    }).catch((err) => {
+      console.log(err)
+    })
+  }, [])
 
   const submitRecipe = (values: any) => {
     const id : number = recipeList.length ? recipeList[recipeList.length-1].id + 1 : 1;
     const recipe = {id: id, title: values.recipeName, description: values.recipeDescription, ingredients: values.recipeIngredients, labels: values.recipeLabels, pdf: values.recipePdf}
     const allRecipes: Recipe[] = [...recipeList, recipe];
+    axios.post(`http://localhost:3500/api/recipes`, recipe)
     setRecipeList(allRecipes)
     addRecipe.resetFields();
   };
@@ -138,6 +142,7 @@ const AddRecipe: React.FC<AddRecipeProps> = ( {setRecipeList, recipeList}: AddRe
                   placeholder="Selecteer ingrediënten"
                   onChange={handleChange}
                   options={ingredients}
+                  loading={initLoading}
                 />
           </Form.Item>
 
@@ -150,6 +155,7 @@ const AddRecipe: React.FC<AddRecipeProps> = ( {setRecipeList, recipeList}: AddRe
                   placeholder="Selecteer labels"
                   onChange={handleChange}
                   options={labels}
+                  loading={initLoading}
                 />
           </Form.Item>
 
